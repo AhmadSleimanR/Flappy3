@@ -63,7 +63,7 @@ public class Level {
 	}
 	
 	private void createPipes(){
-		Pipe.Create();
+		Pipe.create();
 		for(int i = 0; i < 5 * 2; i+= 2){
 			pipes[i] = new Pipe(OFFSET + index * 3.0f, random.nextFloat() * 4.0f);
 			pipes[i + 1] = new Pipe(pipes[i].getX(), pipes[i].getX() - 11.5f);

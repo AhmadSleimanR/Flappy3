@@ -12,7 +12,7 @@ public class VertexArray {
 	private int vao, vbo, ibo, tbo;
 	private int count;
 	
-	public VertexArray(int count){
+	public VertexArray(int count) {
 		this.count = count;
 		vao = glGenVertexArrays();
 	}
@@ -39,31 +39,34 @@ public class VertexArray {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, BufferUtils.createByteBuffer(indices), GL_STATIC_DRAW);
 		
-		
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
 	}
 	
-	public void bind(){
+	public void bind() {
 		glBindVertexArray(vao);
 		if (ibo > 0)
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 	}
-	public void unbind(){
+	
+	public void unbind() {
 		if (ibo > 0)
-		    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		
 		glBindVertexArray(0);
 	}
-	public void draw(){
+	
+	public void draw() {
 		if (ibo > 0)
-		    glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_BYTE, 0);
+			glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_BYTE, 0);
 		else
 			glDrawArrays(GL_TRIANGLES, 0, count);
 	}
-	public void render(){
+	
+	public void render() {
 		bind();
-		render();
+		draw();
 	}
 
 }

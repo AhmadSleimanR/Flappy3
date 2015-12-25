@@ -1,13 +1,13 @@
 package com.darklycan51.flappy;
 
-
-
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
-import org.lwjgl.glfw.*;
+import java.nio.ByteBuffer;
+
+import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.*;
 
 import com.darklycan51.flappy.graphics.Shader;
@@ -15,13 +15,11 @@ import com.darklycan51.flappy.input.Input;
 import com.darklycan51.flappy.level.Level;
 import com.darklycan51.flappy.math.Matrix4f;
 
-
-
 public class Main implements Runnable {
 	
 	private int width = 1280;
 	private int height = 720;
-
+	
 	private Thread thread;
 	private boolean running = false;
 	
@@ -29,53 +27,45 @@ public class Main implements Runnable {
 	
 	private Level level;
 	
-	public void start(){
+	public void start() {
 		running = true;
 		thread = new Thread(this, "Game");
 		thread.start();
 	}
-	private void init (){
-		if (glfwInit() != GL_TRUE){
+	
+	private void init() {
+		if (glfwInit() != GL_TRUE) {
 			System.err.println("Could not initialize GLFW!");
 			return;
 		}
-
+		
 		glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
 		window = glfwCreateWindow(width, height, "Flappy", NULL, NULL);
-		
-		if(window == NULL){
-			System.err.println("Could not create Window!");
+		if (window == NULL) {
+			System.err.println("Could not create GLFW window!");
 			return;
 		}
 		
-		glfwSetKeyCallback(window, new Input());
-		
 		GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-
-		glfwSetWindowPos(
-                window,
-                (vidmode.width() - width) / 2,
-                (vidmode.height() - height) / 2
-            ); 
+		glfwSetWindowPos(window, (vidmode.width() - width) / 2, (vidmode.height() - height) / 2);
+		
+		glfwSetKeyCallback(window, new Input());
 		
 		glfwMakeContextCurrent(window);
 		glfwShowWindow(window);
-		
+		//GLContext.createFromCurrent();
 		GL.createCapabilities();
 		
-		//glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-		glEnable(GL_DEPTH_TEST);
+ 		glEnable(GL_DEPTH_TEST);
 		glActiveTexture(GL_TEXTURE1);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		System.out.println("Opengl: " + glGetString(GL_VERSION));
-		
+		System.out.println("OpenGL: " + glGetString(GL_VERSION));
 		Shader.loadAll();
 		
 		Matrix4f pr_matrix = Matrix4f.orthographic(-10.0f, 10.0f, -10.0f * 9.0f / 16.0f, 10.0f * 9.0f / 16.0f, -1.0f, 1.0f);
 		Shader.BG.setUniformMat4f("pr_matrix", pr_matrix);
 		Shader.BG.setUniform1i("tex", 1);
-		
 		
 		Shader.BIRD.setUniformMat4f("pr_matrix", pr_matrix);
 		Shader.BIRD.setUniform1i("tex", 1);
@@ -84,70 +74,64 @@ public class Main implements Runnable {
 		Shader.PIPE.setUniform1i("tex", 1);
 		
 		level = new Level();
-		/*
-	    // Make the OpenGL context current
-        glfwMakeContextCurrent(window);
-        // Enable v-sync
-        glfwSwapInterval(1);
- 
-        // Make the window visible
-        glfwShowWindow(window);
-        */
 	}
-		
-	public void run(){
+	
+	public void run() {
 		init();
+		
 		long lastTime = System.nanoTime();
 		double delta = 0.0;
-		double ns = 1000000000.0/60.0;
+		double ns = 1000000000.0 / 60.0;
 		long timer = System.currentTimeMillis();
 		int updates = 0;
 		int frames = 0;
-		
-		while (running){
+		while (running) {
 			long now = System.nanoTime();
 			delta += (now - lastTime) / ns;
 			lastTime = now;
-			if(delta >= 1.0){
+			if (delta >= 1.0) {
 				update();
 				updates++;
 				delta--;
 			}
 			render();
 			frames++;
-			if(System.currentTimeMillis() - timer > 1000){
+			if (System.currentTimeMillis() - timer > 1000) {
 				timer += 1000;
-				System.out.println(updates + "ups, " + frames + " fps");
+				System.out.println(updates + " ups, " + frames + " fps");
 				updates = 0;
 				frames = 0;
 			}
 			if (glfwWindowShouldClose(window) == GL_TRUE)
 				running = false;
 		}
+		
 		glfwDestroyWindow(window);
 		glfwTerminate();
 	}
 	
-	private void update(){
+	private void update() {
 		glfwPollEvents();
 		level.update();
-		if (Level.isGameOver()){
+		
+		if (level.isGameOver()) {
 			level = new Level();
 		}
 	}
 	
-	private void render(){
+	private void render() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		level.render();
 		
 		int error = glGetError();
-		if(error != GL_NO_ERROR)
+		if (error != GL_NO_ERROR)
 			System.out.println(error);
+		
 		glfwSwapBuffers(window);
 	}
+
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-        new Main().start();
+		new Main().start();
 	}
 
 }
